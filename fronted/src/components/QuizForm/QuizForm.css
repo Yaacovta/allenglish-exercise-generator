@@ -1,0 +1,22 @@
+.form-label {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.form-label-text {
+  display: inline-block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 10px;
+  resize: vertical;
+}
+
+.form-select {
+  display: block;
+  width: 100%;
+  padding: 10px;
+}

@@ -1,0 +1,13 @@
+.app-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+  direction: ltr;
+  text-align: left;
+}
+
+.form-title {
+  text-align: center;
+  margin-bottom: 2rem;
+}
