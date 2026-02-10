@@ -1,0 +1,70 @@
+.download-docx-actions {
+    margin-top: 16px;
+  }
+  
+  .download-docx-actions--inline {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  /* Base */
+  .download-docx-btn {
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    cursor: pointer;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    font-weight: 700;
+    transition: transform 0.08s ease, background 0.2s ease, opacity 0.2s ease;
+  }
+  
+  .download-docx-btn:hover {
+    transform: translateY(-1px);
+  }
+  
+  .download-docx-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  /* Wider buttons (take the space you saw on the right) */
+  .download-docx-btn--wide {
+    flex: 1;                 /* each takes half the row */
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+  
+  /* Colors – different from Generate Quiz */
+  .download-docx-btn--teacher {
+    background: #2563eb;     /* blue */
+  }
+  
+  .download-docx-btn--teacher:hover {
+    background: #1d4ed8;
+  }
+  
+  .download-docx-btn--student {
+    background: #1e40af;     /* darker blue */
+  }
+  
+  .download-docx-btn--student:hover {
+    background: #1e3a8a;
+  }
+  
+  /* Loading */
+  .download-docx-btn--loading {
+    background: #64748b !important;
+  }
+  
+  /* Mobile fallback */
+  @media (max-width: 520px) {
+    .download-docx-actions--inline {
+      flex-direction: column;
+    }
+  }
+  

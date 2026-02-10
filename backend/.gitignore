@@ -14,5 +14,6 @@ __pycache__/
 .idea/
 .DS_Store
 
-# Exported files
-exports/
+# Exported files (generated documents)
+backend/exports/
+

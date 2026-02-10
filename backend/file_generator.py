@@ -3,7 +3,6 @@ from pathlib import Path
 from datetime import datetime
 from docx import Document
 from docx.shared import Pt, Inches
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 import re
 import unicodedata
 
@@ -20,46 +19,48 @@ def _sanitize_filename(name: str) -> str:
     return name[:60] if name else "quiz"
 
 
-def generate_docx_from_text(quiz_text: str, filename_hint: str | None = None) -> str:
+def generate_docx_from_text(
+    quiz_text: str,
+    filename_hint: str | None = None,
+    include_answers: bool = True,  # NEW
+) -> str:
     """
     Convert plain text quiz into a nicely formatted DOCX:
     - Each non-empty line → paragraph
-    - Numbered questions (1.) → מודגשות
-    - Choices A–D → רשימת תבליטים פנימית (indent)
-    - "ANSWER KEY" → כותרת משנה
-    - רווחים לפני/אחרי פסקה כך שיהיו הפרדות נקיות
+    - Numbered questions (1.) → bold number
+    - Choices A–D → indented
+    - "ANSWER KEY" → subheader (optional)
     Returns filesystem path to the saved .docx
     """
     doc = Document()
 
-    # Page styling (margins etc. – optional and gentle)
+    # Page styling
     section = doc.sections[0]
     section.top_margin = Inches(0.8)
     section.bottom_margin = Inches(0.8)
     section.left_margin = Inches(0.8)
     section.right_margin = Inches(0.8)
 
-    # Title (optional – נייצר כותרת כללית אם אין)
+    # Title (optional)
     title = (filename_hint or "Generated Quiz").strip()
-    p_title = doc.add_paragraph(title)
-    p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run_t = p_title.runs[0]
-    run_t.font.bold = True
-    run_t.font.size = Pt(16)
+    if title:
+        p = doc.add_paragraph(title)
+        r = p.runs[0]
+        r.font.bold = True
+        r.font.size = Pt(16)
+        p.paragraph_format.space_after = Pt(12)
 
-    # Spacer
-    doc.add_paragraph("")
-
-    # Split into lines, preserve empty lines as blank paragraphs
-    lines = quiz_text.replace("\r\n", "\n").split("\n")
-
-    # Track if we're inside answer key
+    lines = (quiz_text or "").splitlines()
     in_answer_key = False
 
     for raw in lines:
         line = raw.rstrip()
 
-        # Blank line → spacer paragraph (keeps visual separation)
+        # If we don't want answers: stop when answer key starts
+        if not include_answers and line.strip().lower().startswith("answer key"):
+            break
+
+        # Blank line → spacer
         if not line.strip():
             para = doc.add_paragraph("")
             para.paragraph_format.space_after = Pt(6)
@@ -67,16 +68,17 @@ def generate_docx_from_text(quiz_text: str, filename_hint: str | None = None) ->
 
         # Detect ANSWER KEY header (case-insensitive)
         if line.strip().lower().startswith("answer key"):
-            in_answer_key = True
-            p = doc.add_paragraph("ANSWER KEY")
-            r = p.runs[0]
-            r.font.bold = True
-            r.font.size = Pt(12)
-            p.paragraph_format.space_before = Pt(12)
-            p.paragraph_format.space_after = Pt(6)
+            if include_answers:
+                in_answer_key = True
+                p = doc.add_paragraph("ANSWER KEY")
+                r = p.runs[0]
+                r.font.bold = True
+                r.font.size = Pt(12)
+                p.paragraph_format.space_before = Pt(12)
+                p.paragraph_format.space_after = Pt(6)
             continue
 
-        # Inside answer key: keep lines simple, monospace-like feel (bold numbers)
+        # Inside answer key
         if in_answer_key:
             p = doc.add_paragraph(line)
             p.paragraph_format.space_after = Pt(3)
@@ -101,13 +103,12 @@ def generate_docx_from_text(quiz_text: str, filename_hint: str | None = None) ->
         # Choice? (A) / A. / A)
         c_match = CHOICE_PATTERN.match(line)
         if c_match:
-            # Bullet-like indent using a simple style approach
             p = doc.add_paragraph(f"{c_match.group(1)} {c_match.group(2)}")
             p.paragraph_format.left_indent = Inches(0.25)
             p.paragraph_format.space_after = Pt(2)
             continue
 
-        # Default: normal paragraph
+        # Default
         p = doc.add_paragraph(line)
         p.paragraph_format.space_after = Pt(3)
 

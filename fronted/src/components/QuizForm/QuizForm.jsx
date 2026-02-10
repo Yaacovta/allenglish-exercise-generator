@@ -1,7 +1,16 @@
 import React from 'react';
 import './QuizForm.css';
 
-function QuizForm({ text, setText, level, setLevel, quizType, setQuizType }) {
+function QuizForm({
+  text,
+  setText,
+  level,
+  setLevel,
+  quizType,
+  setQuizType,
+  questionCount,
+  setQuestionCount,
+}) {
   return (
     <>
       <label className="form-label">
@@ -44,6 +53,24 @@ function QuizForm({ text, setText, level, setLevel, quizType, setQuizType }) {
           <option value="reading">Reading Comprehension</option>
           <option value="grammar">Grammar</option>
           <option value="vocabulary">Vocabulary</option>
+          <option value="truefalse">True / False</option>
+        </select>
+      </label>
+
+      <label className="form-label">
+        <span className="form-label-text">🔢 Number of Questions:</span>
+        <select
+          className="form-select"
+          value={questionCount}
+          onChange={(e) => setQuestionCount(e.target.value)}
+          required
+        >
+          <option value="">Choose number</option>
+          {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
+            <option key={n} value={n}>
+              {n}
+            </option>
+          ))}
         </select>
       </label>
     </>

@@ -1,21 +1,21 @@
 import React from 'react';
+import './GenerateButton.css';
 
-function GenerateButton() {
+function GenerateButton({ isLoading }) {
   return (
     <button
       type="submit"
-      style={{
-        width: '100%',
-        padding: '15px',
-        fontSize: '16px',
-        backgroundColor: '#4CAF50',
-        color: 'white',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer'
-      }}
+      className={`generate-btn ${isLoading ? 'generate-btn--loading' : ''}`}
+      disabled={isLoading}
     >
-      ⚡ Generate Quiz
+      {isLoading ? (
+        <>
+          <span className="generate-btn__spinner" aria-hidden="true"></span>
+          <span className="generate-btn__text">AI is generating your quiz…</span>
+        </>
+      ) : (
+        <span className="generate-btn__text">⚡ Generate Quiz</span>
+      )}
     </button>
   );
 }
