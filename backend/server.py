@@ -85,7 +85,7 @@ async def export_docx(req: ExportDocxRequest):
         out_path = generate_docx_from_text(
             req.content,
             filename_hint=filename,
-            include_answers=req.include_answers,  
+            include_answers=req.include_answers,
         )
 
         suffix = "teacher" if req.include_answers else "student"
@@ -99,3 +99,7 @@ async def export_docx(req: ExportDocxRequest):
     except Exception as e:
         print("[ERROR export_docx]", e)
         raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)
