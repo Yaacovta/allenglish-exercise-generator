@@ -8,13 +8,28 @@ import QuizChat from './components/QuizChat/QuizChat';
 import DownloadDocxButton from './components/DownloadDocxButton/DownloadDocxButton';
 import { splitQuiz, joinQuiz } from './utils/quizParsing';
 
-function App() {
-  const [text, setText] = useState('');
-  const [level, setLevel] = useState('');
-  const [quizType, setQuizType] = useState('');
+const QUIZ_TYPES = ['reading', 'grammar', 'vocabulary', 'truefalse'];
+const MAX_TOTAL = 15;
 
-  // NEW: user must choose number of questions (no default)
-  const [questionCount, setQuestionCount] = useState('');
+function App() {
+  // 'paste' = the teacher pastes a text, 'unseen' = the AI writes the text from a description
+  const [mode, setMode] = useState('paste');
+
+  const [text, setText] = useState('');
+  const [description, setDescription] = useState('');
+  const [level, setLevel] = useState('');
+
+  // How many questions of each type (0 = type not included)
+  const [counts, setCounts] = useState({
+    reading: 0,
+    grammar: 0,
+    vocabulary: 0,
+    truefalse: 0,
+  });
+
+  // The generated text (Unseen mode only)
+  const [passageTitle, setPassageTitle] = useState('');
+  const [passage, setPassage] = useState('');
 
   const [questions, setQuestions] = useState('');
   const [answerKey, setAnswerKey] = useState('');
@@ -26,16 +41,31 @@ function App() {
     e.preventDefault();
     if (isGenerating) return;
 
+    const sections = QUIZ_TYPES
+      .filter((t) => counts[t] > 0)
+      .map((t) => ({ quizType: t, count: counts[t] }));
+    const total = sections.reduce((sum, s) => sum + s.count, 0);
+
+    if (total < 1 || total > MAX_TOTAL) {
+      alert(`Please choose between 1 and ${MAX_TOTAL} questions in total.`);
+      return;
+    }
+
     setIsGenerating(true);
     try {
-      const payload = {
-        source_text: text,
-        level: (level || '').split(' ')[0],        // A1/A2/B1/B2
-        quizType: (quizType || '').toLowerCase(),  // reading/grammar/vocabulary/truefalse
-        question_count: parseInt(questionCount, 10), // 1..15
-      };
+      const levelCode = (level || '').split(' ')[0]; // A1/A2/B1/B2/C1/C2
 
-      const res = await fetch('http://127.0.0.1:8000/api/quizzes/create', {
+      let url;
+      let payload;
+      if (mode === 'unseen') {
+        url = 'http://127.0.0.1:8000/api/unseen/create';
+        payload = { description, level: levelCode, sections };
+      } else {
+        url = 'http://127.0.0.1:8000/api/quizzes/create';
+        payload = { source_text: text, level: levelCode, sections };
+      }
+
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -46,14 +76,25 @@ function App() {
         throw new Error(err.detail || `HTTP ${res.status}`);
       }
 
-      const data = await res.json(); // { result: "..." }
+      const data = await res.json();
+      // Unseen: { title, passage, result }   Paste: { result }
       const parts = splitQuiz(data.result);
       setQuestions(parts.questions);
       setAnswerKey(parts.answerKey);
+
+      if (mode === 'unseen') {
+        setPassageTitle(data.title || '');
+        setPassage(data.passage || '');
+      } else {
+        setPassageTitle('');
+        setPassage('');
+      }
     } catch (err) {
       console.error('Generate failed:', err);
       setQuestions(`ERROR: ${err.message}`);
       setAnswerKey('');
+      setPassageTitle('');
+      setPassage('');
     } finally {
       setIsGenerating(false);
     }
@@ -87,10 +128,11 @@ function App() {
 
       <form onSubmit={handleSubmit}>
         <QuizForm
+          mode={mode} setMode={setMode}
           text={text} setText={setText}
+          description={description} setDescription={setDescription}
           level={level} setLevel={setLevel}
-          quizType={quizType} setQuizType={setQuizType}
-          questionCount={questionCount} setQuestionCount={setQuestionCount}
+          counts={counts} setCounts={setCounts}
         />
 
         <GenerateButton isLoading={isGenerating} />
@@ -99,8 +141,16 @@ function App() {
           <div className="ai-loading" role="status" aria-live="polite">
             <span className="ai-loading__spinner" aria-hidden="true"></span>
             <div className="ai-loading__text">
-              <div className="ai-loading__title">AI is preparing your quiz…</div>
-              <div className="ai-loading__subtitle">Please wait a few seconds.</div>
+              <div className="ai-loading__title">
+                {mode === 'unseen'
+                  ? 'AI is writing the text and preparing your quiz…'
+                  : 'AI is preparing your quiz…'}
+              </div>
+              <div className="ai-loading__subtitle">
+                {mode === 'unseen'
+                  ? 'This can take a little longer than usual.'
+                  : 'Please wait a few seconds.'}
+              </div>
             </div>
           </div>
         )}
@@ -109,13 +159,20 @@ function App() {
       {(questions || answerKey) && (
         <>
           <QuizResult
+            passageTitle={passageTitle}
+            passage={passage}
+            onChangePassage={setPassage}
             questions={questions}
             answerKey={answerKey}
             onChangeQuestions={setQuestions}
             onChangeAnswerKey={setAnswerKey}
           />
           <QuizChat onSendMessage={handleChatMessage} />
-          <DownloadDocxButton content={combinedForDownload} />
+          <DownloadDocxButton
+            content={combinedForDownload}
+            passage={passage}
+            passageTitle={passageTitle}
+          />
         </>
       )}
     </div>

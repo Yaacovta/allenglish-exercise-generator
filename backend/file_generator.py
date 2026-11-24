@@ -23,6 +23,8 @@ def generate_docx_from_text(
     quiz_text: str,
     filename_hint: str | None = None,
     include_answers: bool = True,  # NEW
+    passage_title: str | None = None,  # Unseen: title of the generated text
+    passage: str | None = None,        # Unseen: the generated text
 ) -> str:
     """
     Convert plain text quiz into a nicely formatted DOCX:
@@ -30,6 +32,7 @@ def generate_docx_from_text(
     - Numbered questions (1.) → bold number
     - Choices A–D → indented
     - "ANSWER KEY" → subheader (optional)
+    - If a passage is given (Unseen), it is placed right after the document title
     Returns filesystem path to the saved .docx
     """
     doc = Document()
@@ -49,6 +52,26 @@ def generate_docx_from_text(
         r.font.bold = True
         r.font.size = Pt(16)
         p.paragraph_format.space_after = Pt(12)
+
+    # Passage (Unseen)
+    if passage and passage.strip():
+        if passage_title and passage_title.strip():
+            p = doc.add_paragraph(passage_title.strip())
+            r = p.runs[0]
+            r.font.bold = True
+            r.font.size = Pt(14)
+            p.paragraph_format.space_after = Pt(6)
+
+        for para_text in passage.replace("\r\n", "\n").split("\n"):
+            if not para_text.strip():
+                continue
+            p = doc.add_paragraph(para_text.strip())
+            p.paragraph_format.space_after = Pt(8)
+            for run in p.runs:
+                run.font.size = Pt(11)
+
+        spacer = doc.add_paragraph("")
+        spacer.paragraph_format.space_after = Pt(6)
 
     lines = (quiz_text or "").splitlines()
     in_answer_key = False

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./DownloadDocxButton.css";
 
-export default function DownloadDocxButton({ content }) {
+export default function DownloadDocxButton({ content, passage, passageTitle }) {
   const [isDownloadingTeacher, setIsDownloadingTeacher] = useState(false);
   const [isDownloadingStudent, setIsDownloadingStudent] = useState(false);
 
@@ -30,6 +30,9 @@ export default function DownloadDocxButton({ content }) {
           content,
           filename: includeAnswers ? "quiz_teacher" : "quiz_student",
           include_answers: includeAnswers,
+          // Unseen: the text is printed together with the questions
+          passage_title: passageTitle || null,
+          passage: passage || null,
         }),
       });
 

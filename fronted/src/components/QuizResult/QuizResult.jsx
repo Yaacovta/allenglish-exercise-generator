@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import "./QuizResult.css";
 
 export default function QuizResult({
+  passageTitle,
+  passage,
+  onChangePassage, // Unseen: the generated text can be edited by the teacher
   questions,
   answerKey,
   onChangeQuestions, // אופציונלי לעריכה ידנית של השאלות
@@ -10,6 +13,21 @@ export default function QuizResult({
 
   return (
     <div className="quiz-result">
+      {/* Passage box (Unseen only, editable textarea) */}
+      {passage && (
+        <div className="qr-panel">
+          <div className="qr-panel-header">
+            <span>📖 {passageTitle || "Text"}</span>
+          </div>
+          <textarea
+            className="qr-textarea"
+            style={{ fontFamily: "inherit", minHeight: 260 }}
+            value={passage}
+            onChange={(e) => onChangePassage?.(e.target.value)}
+          />
+        </div>
+      )}
+
       {/* Questions box (editable textarea) */}
       <div className="qr-panel">
         <div className="qr-panel-header">
@@ -47,4 +65,3 @@ export default function QuizResult({
     </div>
   );
 }
-

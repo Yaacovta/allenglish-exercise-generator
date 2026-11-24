@@ -20,3 +20,93 @@
   width: 100%;
   padding: 10px;
 }
+
+/* ---------- Start mode: paste a text / Unseen ---------- */
+.form-mode {
+  display: flex;
+  gap: 8px;
+}
+
+.form-mode-btn {
+  flex: 1;
+  padding: 12px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #f7f7f7;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.form-mode-btn:hover {
+  background: #eee;
+}
+
+.form-mode-btn--active {
+  background: rgba(31, 138, 122, 0.12);
+  border-color: #1f8a7a;
+  color: #0f3d3a;
+}
+
+@media (max-width: 520px) {
+  .form-mode {
+    flex-direction: column;
+  }
+}
+
+/* ---------- Question types and amounts ---------- */
+.form-types {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 4px 12px;
+}
+
+.form-type-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.form-type-row:last-child {
+  border-bottom: none;
+}
+
+.form-type-name {
+  flex: 1;
+}
+
+.form-select--count {
+  width: 90px;
+}
+
+.form-total {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.form-total--over {
+  color: #b91c1c;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  cursor: pointer;
+}
+
+.form-check input:disabled + span {
+  opacity: 0.5;
+}
+
+.form-hint {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #777;
+}
